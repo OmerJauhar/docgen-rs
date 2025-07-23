@@ -46,39 +46,49 @@ pub async fn generate_markdown_doc(
     dotenv().ok();
     let api_key = env::var("OPENROUTER_API_KEY")?;
 
-    // Compose the prompt
-    let mut prompt = String::new();
-    prompt.push_str("# Software Change Documentation\n");
-    prompt.push_str("## Form Context\n");
-    prompt.push_str(&format!("- Code Flow: {}\n- DB Changes: {}\n- Extensibility: {}\n- Performance/Security: {}\n\n",
-        form.code_flow, form.db_changes, form.extensibility, form.perf_notes));
-    prompt.push_str("## Git Changes\n");
+    // Combine all git diffs and code into a single string
+    let mut git_diff = String::new();
     for change in git_changes {
-        prompt.push_str(&format!(
-            "### {}\n+{} -{} fns:{}\nDiff:\n{}\nCode:\n```rust\n{}\n```\n\n",
+        git_diff.push_str(&format!("### {}\n+{} -{} fns:{}\nDiff:\n{}\nCode:\n```rust\n{}\n```\n\n",
             change.filename, change.lines_added, change.lines_removed, change.functions_modified, change.diff, change.code));
     }
-    prompt.push_str("## Instructions\n");
-    prompt.push_str(user_prompt);
-    prompt.push_str("\n\nGenerate a highly professional, comprehensive markdown document covering all software development aspects.");
+
+    // Compose the system and user messages
+    let system_message = "You are a documentation generator. You convert git diffs and developer metadata into structured Markdown documentation suitable for developer handoff and PDF export. Always return a valid JSON object structured like OpenAI's Chat API response, with a top-level 'choices' array, each containing a 'message' object with a 'content' field that holds Markdown content only. Do not return HTML, explanations, or extra fields.";
+
+    let user_message = format!(
+        "Here are the latest Git changes:\n\n```diff\n{}\n```\n\nAnd here is the form metadata provided by the developer:\n\n```
+Feature: {}\nSummary: {}\nCode Flow: {}\nDatabase Changes: {}\nExtensibility Notes: {}\nKnown Caveats: {}\n```
+\nGenerate developer-facing documentation in **Markdown** that includes sections for Feature Description, Summary, Code Flow, Database Changes, Extensibility, and Caveats. Make it clean, professional, and suitable for post-processing into PDF.\n\nReturn your answer in the following JSON format:\n```json\n{{\n  \"choices\": [\n    {{\n      \"message\": {{\n        \"content\": \"<MARKDOWN_DOCUMENTATION_HERE>\"\n      }}\n    }}\n  ]\n}}\n```{}",
+        git_diff,
+        form.code_flow, // Feature (for now, use code_flow as placeholder)
+        form.perf_notes, // Summary (for now, use perf_notes as placeholder)
+        form.code_flow,
+        form.db_changes,
+        form.extensibility,
+        form.perf_notes,
+        user_prompt // Optionally append user prompt
+    );
 
     // Prepare OpenRouter API request
     let client = reqwest::Client::new();
     let body = json!({
-        "model": "openrouter/openai/gpt-4-turbo",
-        "messages": [{
-            "role": "user",
-            "content": prompt
-        }],
+        "model": "gpt-4",
+        "messages": [
+            { "role": "system", "content": system_message },
+            { "role": "user", "content": user_message }
+        ],
         "max_tokens": 4096,
     });
-    let res = client.post("https://openrouter.ai/api/v1/chat")
+    let res = client.post("https://openrouter.ai/api/v1/chat/completions")
         .bearer_auth(api_key)
         .header("Content-Type", "application/json")
         .json(&body)
         .send()
         .await?;
-    let res_json: serde_json::Value = res.json().await?;
+    let text = res.text().await?;
+    println!("Raw response: {}", text);
+    let res_json: serde_json::Value = serde_json::from_str(&text)?;
     let markdown = res_json["choices"][0]["message"]["content"].as_str().unwrap_or("").to_string();
 
     // Save markdown to file
