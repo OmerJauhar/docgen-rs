@@ -92,7 +92,9 @@ Feature: {}\nSummary: {}\nCode Flow: {}\nDatabase Changes: {}\nExtensibility Not
     let markdown = res_json["choices"][0]["message"]["content"].as_str().unwrap_or("").to_string();
 
     // Save markdown to file
+    println!("Saving markdown content:\n{}", markdown);
     fs::write(md_path, &markdown)?;
+
 
     // Convert markdown to PDF (requires pandoc installed)
     let output = std::process::Command::new("pandoc")
