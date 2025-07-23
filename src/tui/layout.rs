@@ -3,29 +3,46 @@ use ratatui::{
     Frame,
 };
 
-use super::app::{App, FormStep};
+use super::app::{App, MainView};
 use super::widgets;
 
-pub fn render_ui(f: &mut Frame, app: &mut App)
- {
-    let chunks = Layout::default()
+pub fn render_ui(f: &mut Frame, app: &mut App) {
+    // Top: Flow Diagram
+    let main_chunks = Layout::default()
         .direction(Direction::Vertical)
-        .margin(2)
+        .margin(1)
         .constraints([
-            Constraint::Length(3),
-            Constraint::Min(2),
-            Constraint::Length(3),
+            Constraint::Length(4), // Flow diagram
+            Constraint::Min(10),  // Main content
+            Constraint::Length(3), // Footer
         ])
-        .split(f.area()); // instead of f.size()
+        .split(f.area());
 
-    widgets::draw_header(f, chunks[0]);
-    
-    match app.current_step {
-        FormStep::CodeFlow => widgets::draw_input_form("Describe code flow", &app.input_buffer, chunks[1], f),
-        FormStep::DbChanges => widgets::draw_input_form("Any DB changes?", &app.input_buffer, chunks[1], f),
-        FormStep::Extensibility => widgets::draw_input_form("How can it be extended?", &app.input_buffer, chunks[1], f),
-        FormStep::PerfNotes => widgets::draw_input_form("Performance or security concerns?", &app.input_buffer, chunks[1], f),
+    widgets::draw_flow_diagram(f, main_chunks[0], app.flow_step);
+
+    // Main content area: split horizontally for main panel and side panel
+    let content_chunks = Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints([
+            Constraint::Percentage(65),
+            Constraint::Percentage(35),
+        ])
+        .split(main_chunks[1]);
+
+    match app.main_view {
+        MainView::Form => {
+            widgets::draw_form_panel(f, content_chunks[0], app);
+            widgets::draw_llm_stats_panel(f, content_chunks[1], &app.token_stats);
+        },
+        MainView::GitDiff => {
+            widgets::draw_heatmap_panel(f, content_chunks[0], &app.file_impacts);
+            widgets::draw_llm_stats_panel(f, content_chunks[1], &app.token_stats);
+        },
+        MainView::LLMStats => {
+            widgets::draw_llm_stats_panel(f, content_chunks[0], &app.token_stats);
+            widgets::draw_heatmap_panel(f, content_chunks[1], &app.file_impacts);
+        },
     }
 
-    widgets::draw_footer(f, chunks[2]);
+    widgets::draw_footer(f, main_chunks[2], app.main_view);
 }
