@@ -3,7 +3,6 @@
 // It will take form context, git changes, and a user prompt, and return a markdown document.
 
 use std::fs;
-use std::path::Path;
 use std::env;
 use serde_json::json;
 use dotenv::dotenv;
