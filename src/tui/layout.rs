@@ -7,18 +7,20 @@ use super::app::{App, MainView};
 use super::widgets;
 
 pub fn render_ui(f: &mut Frame, app: &mut App) {
-    // Top: Flow Diagram
+    // Top: Header
     let main_chunks = Layout::default()
         .direction(Direction::Vertical)
         .margin(1)
         .constraints([
+            Constraint::Length(4), // Header
             Constraint::Length(4), // Flow diagram
             Constraint::Min(10),  // Main content
             Constraint::Length(3), // Footer
         ])
         .split(f.area());
 
-    widgets::draw_flow_diagram(f, main_chunks[0], app.flow_step);
+    widgets::draw_header(f, main_chunks[0], &app.current_branch, &app.git_status);
+    widgets::draw_flow_diagram(f, main_chunks[1], app.flow_step);
 
     // Main content area: split horizontally for main panel and side panel
     let content_chunks = Layout::default()
@@ -27,7 +29,7 @@ pub fn render_ui(f: &mut Frame, app: &mut App) {
             Constraint::Percentage(65),
             Constraint::Percentage(35),
         ])
-        .split(main_chunks[1]);
+        .split(main_chunks[2]);
 
     match app.main_view {
         MainView::Form => {
@@ -44,5 +46,5 @@ pub fn render_ui(f: &mut Frame, app: &mut App) {
         },
     }
 
-    widgets::draw_footer(f, main_chunks[2], app.main_view);
+    widgets::draw_footer(f, main_chunks[3], app.main_view);
 }

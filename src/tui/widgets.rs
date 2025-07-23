@@ -7,13 +7,31 @@ use ratatui::{
 };
 use super::app::{App, MainView, FileImpact, TokenStats};
 
-pub fn draw_header(f: &mut Frame, area: Rect)
- {
+pub fn draw_header(f: &mut Frame, area: Rect, branch: &str, status: &str) {
+    use ratatui::layout::{Alignment};
+    let branch_span = Span::styled(
+        format!(" {}", branch),
+        Style::default().fg(Color::Green).add_modifier(Modifier::BOLD),
+    );
+    let status_span = Span::styled(
+        format!("{}", status),
+        Style::default().fg(Color::Yellow),
+    );
+    let title = Span::styled(
+        "📄 docgen-rs - AI Developer Docs",
+        Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD),
+    );
+    let line = Line::from(vec![title]);
+    let branch_line = Line::from(vec![branch_span, Span::raw("  |  "), status_span]);
     let block = Block::default()
-        .title(Span::styled("📄 docgen-rs - AI Developer Docs",
-            Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)))
-        .borders(Borders::ALL);
-    f.render_widget(block, area);
+        .borders(Borders::ALL)
+        .border_type(ratatui::widgets::BorderType::Rounded)
+        .title_alignment(Alignment::Center);
+    let mut lines = vec![line, branch_line];
+    let para = Paragraph::new(lines)
+        .block(block)
+        .alignment(Alignment::Center);
+    f.render_widget(para, area);
 }
 
 pub fn draw_input_form(label: &str, input: &str, area: Rect, f: &mut Frame) {

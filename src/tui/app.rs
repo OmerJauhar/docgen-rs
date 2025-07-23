@@ -36,6 +36,8 @@ pub struct App {
     pub file_impacts: Vec<FileImpact>,
     pub token_stats: TokenStats,
     pub flow_step: usize, // 0..=4 for diagram
+    pub current_branch: String,
+    pub git_status: String,
 }
 
 impl App {
@@ -51,6 +53,8 @@ impl App {
             ],
             token_stats: TokenStats { diff_tokens: 1200, form_tokens: 500, total_tokens: 1700 },
             flow_step: 0,
+            current_branch: "main".to_string(),
+            git_status: "3 files changed, 18 insertions(+), 4 deletions(-)".to_string(),
         }
     }
 }
