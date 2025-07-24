@@ -21,17 +21,18 @@ pub struct TokenStats {
     pub total_tokens: usize,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub enum FormStep {
-    CodeFlow,
-    DbChanges,
-    Extensibility,
-    PerfNotes,
+    ProblemStatement,
+    HighLevelOverview,
+    CodeStructure,
+    KeyChanges,
+    FutureConsiderations,
 }
 
 pub struct App {
     pub current_step: FormStep,
-    pub input_buffer: String,
+    pub input_buffers: [String; 5],
     pub main_view: MainView,
     pub file_impacts: Vec<FileImpact>,
     pub token_stats: TokenStats,
@@ -44,8 +45,8 @@ pub struct App {
 impl App {
     pub fn new() -> Self {
         Self {
-            current_step: FormStep::CodeFlow,
-            input_buffer: String::new(),
+            current_step: FormStep::ProblemStatement,
+            input_buffers: Default::default(),
             main_view: MainView::Form,
             file_impacts: vec![
                 FileImpact { filename: "src/main.rs".into(), lines_added: 12, lines_removed: 2, functions_modified: 1, impact_score: 8 },

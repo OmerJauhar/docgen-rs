@@ -119,20 +119,32 @@ pub fn draw_llm_stats_panel(f: &mut Frame, area: Rect, stats: &TokenStats) {
 }
 
 pub fn draw_form_panel(f: &mut Frame, area: Rect, app: &App) {
-    let label = match app.current_step {
-        super::app::FormStep::CodeFlow => "Describe code flow:",
-        super::app::FormStep::DbChanges => "Any DB changes?",
-        super::app::FormStep::Extensibility => "How can it be extended?",
-        super::app::FormStep::PerfNotes => "Performance or security concerns?",
-    };
+    let questions = [
+        ("Problem Statement", "Briefly explain the need or motivation behind the feature. What issue, gap, or requirement does it address?"),
+        ("High-Level Overview", "Summarize the main logic and flow. Describe how the feature fits into the existing system and how it operates."),
+        ("Code Structure", "List all significant files, directories, or modules affected or created. Highlight any structural changes."),
+        ("Key Changes", "Mention any new or updated functions, endpoints, or DB schema changes. Include table/field names if applicable."),
+        ("Future Considerations", "Note any design decisions, edge cases, or potential pitfalls that future developers should be aware of."),
+    ];
+    let idx = app.current_step as usize;
+    let (title, desc) = &questions[idx];
+    let header = Span::styled(format!("[{}]", title), Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD | Modifier::UNDERLINED));
+    let lines = vec![
+        Line::from(vec![header]),
+        Line::from(vec![Span::styled(desc.to_string(), Style::default().fg(Color::DarkGray))]),
+        Line::from(vec![Span::raw(&app.input_buffers[idx])]),
+    ];
     let block = Block::default()
-        .title(Span::styled(label, Style::default().fg(Color::White)))
+        .title(Span::styled("Feature Documentation", Style::default().fg(Color::White)))
         .borders(Borders::ALL);
-    let para = Paragraph::new(app.input_buffer.clone())
+    let para = Paragraph::new(lines)
         .block(block)
-        .wrap(Wrap { trim: true });
+        .wrap(Wrap { trim: false });
     f.render_widget(para, area);
-    f.set_cursor_position((area.x + 1 + app.input_buffer.len() as u16, area.y + 1));
+    // Set cursor for current question (on the input line)
+    let y = area.y + 2; // 0: header, 1: desc, 2: input (relative to area)
+    let x = area.x + 1 + app.input_buffers[idx].len() as u16;
+    f.set_cursor_position((x, y));
 }
 
 pub fn draw_footer(f: &mut Frame, area: Rect, view: MainView) {

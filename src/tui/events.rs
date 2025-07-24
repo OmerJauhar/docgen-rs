@@ -4,19 +4,21 @@ use rfd::FileDialog;
 
 fn next_step(step: &FormStep) -> FormStep {
     match step {
-        FormStep::CodeFlow => FormStep::DbChanges,
-        FormStep::DbChanges => FormStep::Extensibility,
-        FormStep::Extensibility => FormStep::PerfNotes,
-        FormStep::PerfNotes => FormStep::PerfNotes,
+        FormStep::ProblemStatement => FormStep::HighLevelOverview,
+        FormStep::HighLevelOverview => FormStep::CodeStructure,
+        FormStep::CodeStructure => FormStep::KeyChanges,
+        FormStep::KeyChanges => FormStep::FutureConsiderations,
+        FormStep::FutureConsiderations => FormStep::FutureConsiderations,
     }
 }
 
 fn prev_step(step: &FormStep) -> FormStep {
     match step {
-        FormStep::CodeFlow => FormStep::CodeFlow,
-        FormStep::DbChanges => FormStep::CodeFlow,
-        FormStep::Extensibility => FormStep::DbChanges,
-        FormStep::PerfNotes => FormStep::Extensibility,
+        FormStep::ProblemStatement => FormStep::ProblemStatement,
+        FormStep::HighLevelOverview => FormStep::ProblemStatement,
+        FormStep::CodeStructure => FormStep::HighLevelOverview,
+        FormStep::KeyChanges => FormStep::CodeStructure,
+        FormStep::FutureConsiderations => FormStep::KeyChanges,
     }
 }
 
@@ -36,6 +38,7 @@ fn prev_view(view: MainView) -> MainView {
 }
 
 pub fn handle_input(key: KeyEvent, app: &mut App) -> Result<bool, Box<dyn std::error::Error>> {
+    let idx = app.current_step as usize;
     match key.code {
         KeyCode::Esc => return Ok(false),
         KeyCode::Char('0') => {
@@ -44,14 +47,14 @@ pub fn handle_input(key: KeyEvent, app: &mut App) -> Result<bool, Box<dyn std::e
                 app.git_status = format!("Opened folder: {}", folder.display());
             }
         },
-        KeyCode::Char(c) => app.input_buffer.push(c),
-        KeyCode::Backspace => { app.input_buffer.pop(); },
+        KeyCode::Char(c) => app.input_buffers[idx].push(c),
+        KeyCode::Backspace => { app.input_buffers[idx].pop(); },
         KeyCode::Left => app.main_view = prev_view(app.main_view),
         KeyCode::Right => app.main_view = next_view(app.main_view),
         KeyCode::Up => app.current_step = prev_step(&app.current_step),
         KeyCode::Down => {
             app.current_step = next_step(&app.current_step);
-            app.input_buffer.clear();
+            // app.input_buffers[idx].clear(); // Don't clear on next
         },
         _ => {}
     }
