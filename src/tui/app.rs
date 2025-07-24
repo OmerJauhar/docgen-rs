@@ -38,6 +38,7 @@ pub struct App {
     pub flow_step: usize, // 0..=4 for diagram
     pub current_branch: String,
     pub git_status: String,
+    pub project_folder: String, // New field for selected folder
 }
 
 impl App {
@@ -55,6 +56,7 @@ impl App {
             flow_step: 0,
             current_branch: "main".to_string(),
             git_status: "3 files changed, 18 insertions(+), 4 deletions(-)".to_string(),
+            project_folder: ".".to_string(), // Default to current dir
         }
     }
 }

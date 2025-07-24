@@ -12,6 +12,7 @@ reqwest = { version = "0.12.22", features = ["json", "rustls-tls"] }
 serde_json = "1.0.141"
 similar = "2.7.0"
 tokio = { version = "1.46.1", features = ["rt-multi-thread", "macros"] }
+rfd = "0.13"
 [profile.test]
 debug = true
 opt-level = 0 

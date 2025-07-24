@@ -7,7 +7,7 @@ use ratatui::{
 };
 use super::app::{App, MainView, FileImpact, TokenStats};
 
-pub fn draw_header(f: &mut Frame, area: Rect, branch: &str, status: &str) {
+pub fn draw_header(f: &mut Frame, area: Rect, branch: &str, status: &str, project_folder: &str) {
     use ratatui::layout::{Alignment};
     let branch_span = Span::styled(
         format!(" {}", branch),
@@ -18,7 +18,7 @@ pub fn draw_header(f: &mut Frame, area: Rect, branch: &str, status: &str) {
         Style::default().fg(Color::Yellow),
     );
     let title = Span::styled(
-        "📄 docgen-rs - AI Developer Docs",
+        format!("📄 docgen-rs - AI Developer Docs  |  Project: {}", project_folder),
         Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD),
     );
     let line = Line::from(vec![title]);
@@ -152,7 +152,7 @@ pub fn draw_footer(f: &mut Frame, area: Rect, view: MainView) {
     let para = Paragraph::new(Line::from(spans)).alignment(ratatui::layout::Alignment::Center);
     f.render_widget(para, area);
     // Navigation hint
-    let hint = Paragraph::new("Tab: ←/→ • Esc: Quit").style(Style::default().fg(Color::LightGreen));
+    let hint = Paragraph::new("Tab: ←/→ • ↑/↓: Next/Prev Question • 0: Change Project Path • Esc: Quit").style(Style::default().fg(Color::LightGreen));
     let hint_area = Rect { y: area.y + area.height.saturating_sub(1), height: 1, ..area };
     f.render_widget(hint, hint_area);
 }

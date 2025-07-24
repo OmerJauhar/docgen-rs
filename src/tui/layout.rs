@@ -19,7 +19,7 @@ pub fn render_ui(f: &mut Frame, app: &mut App) {
         ])
         .split(f.area());
 
-    widgets::draw_header(f, main_chunks[0], &app.current_branch, &app.git_status);
+    widgets::draw_header(f, main_chunks[0], &app.current_branch, &app.git_status, &app.project_folder);
     widgets::draw_flow_diagram(f, main_chunks[1], app.flow_step);
 
     // Main content area: split horizontally for main panel and side panel

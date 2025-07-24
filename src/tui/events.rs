@@ -1,5 +1,6 @@
 use crossterm::event::{KeyCode, KeyEvent};
 use super::app::{App, FormStep, MainView};
+use rfd::FileDialog;
 
 fn next_step(step: &FormStep) -> FormStep {
     match step {
@@ -37,6 +38,12 @@ fn prev_view(view: MainView) -> MainView {
 pub fn handle_input(key: KeyEvent, app: &mut App) -> Result<bool, Box<dyn std::error::Error>> {
     match key.code {
         KeyCode::Esc => return Ok(false),
+        KeyCode::Char('0') => {
+            if let Some(folder) = FileDialog::new().pick_folder() {
+                app.project_folder = folder.display().to_string();
+                app.git_status = format!("Opened folder: {}", folder.display());
+            }
+        },
         KeyCode::Char(c) => app.input_buffer.push(c),
         KeyCode::Backspace => { app.input_buffer.pop(); },
         KeyCode::Left => app.main_view = prev_view(app.main_view),
