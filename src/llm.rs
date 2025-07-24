@@ -88,12 +88,42 @@ Feature: {}\nSummary: {}\nCode Flow: {}\nDatabase Changes: {}\nExtensibility Not
         .await?;
     let text = res.text().await?;
     println!("Raw response: {}", text);
+    
     let res_json: serde_json::Value = serde_json::from_str(&text)?;
-    let markdown = res_json["choices"][0]["message"]["content"].as_str().unwrap_or("").to_string();
+    println!("res_json: {:?}", res_json);
 
-    // Save markdown to file
-    println!("Saving markdown content:\n{}", markdown);
-    fs::write(md_path, &markdown)?;
+    // println!("res_json[choices]: {:?}", res_json["choices"]);
+    // println!("res_json[choices][0]: {:?}", res_json["choices"][0]);
+    // println!("res_json[choices][0][message]: {:?}", res_json["choices"][0]["message"]);
+    // println!("res_json[choices][0][message][content]: {:?}", res_json["choices"][0]["message"]["content"]);
+
+//     let raw_content = res_json["choices"][0]["message"]["content"]
+//     .as_str()
+//     .unwrap_or("")
+//     .trim()
+//     .strip_prefix("```json")
+//     .or_else(|| raw_content.strip_prefix("```")) // Fallback if just ```
+//     .unwrap_or(raw_content)
+//     .strip_suffix("```")
+//     .unwrap_or(raw_content)
+//     .trim()
+//     .to_string();
+
+// // Now parse the inner JSON string
+// let inner_json: serde_json::Value = serde_json::from_str(&raw_content)?;
+
+// // Extract final Markdown string
+// let markdown = inner_json["choices"][0]["message"]["content"]
+//     .as_str()
+//     .unwrap_or("")
+//     .to_string();
+
+// // Save to .md
+// println!("Saving markdown content:\n{}", markdown);
+// fs::write(md_path, &markdown)?;
+let markdown = res_json["choices"][0]["message"]["content"].as_str().unwrap_or("").to_string();
+println!("markdown: {:?}", markdown);
+fs::write(md_path, &markdown)?;
 
 
     // Convert markdown to PDF (requires pandoc installed)
