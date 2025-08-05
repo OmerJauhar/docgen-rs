@@ -3,6 +3,143 @@ use similar::TextDiff;
 use std::rc::Rc;
 use std::cell::RefCell;
 
+#[derive(Clone, Debug)]
+pub struct GitDiffData {
+    pub files: Vec<GitFileChange>,
+    pub total_additions: usize,
+    pub total_deletions: usize,
+    pub total_files: usize,
+}
+
+#[derive(Clone, Debug)]
+pub struct GitFileChange {
+    pub file_path: String,
+    pub status: String, // "modified", "added", "deleted"
+    pub diff_lines: Vec<String>,
+    pub additions: usize,
+    pub deletions: usize,
+}
+
+impl GitDiffData {
+    pub fn new() -> Self {
+        Self {
+            files: Vec::new(),
+            total_additions: 0,
+            total_deletions: 0,
+            total_files: 0,
+        }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.files.is_empty()
+    }
+
+    pub fn summary(&self) -> String {
+        format!("{} files changed, {} insertions(+), {} deletions(-)", 
+                self.total_files, self.total_additions, self.total_deletions)
+    }
+}
+
+pub fn get_working_directory_diff(repo_path: &str) -> Result<GitDiffData, git2::Error> {
+    let repo = Repository::open(repo_path)?;
+    let head = repo.head()?.peel_to_commit()?;
+    let head_tree = head.tree()?;
+    
+    let mut diff_opts = DiffOptions::new();
+    diff_opts.include_untracked(true);
+    diff_opts.include_ignored(false);
+    
+    let diff = repo.diff_tree_to_workdir_with_index(Some(&head_tree), Some(&mut diff_opts))?;
+    
+    // Use Rc<RefCell<>> to handle borrowing issues
+    let file_changes = Rc::new(RefCell::new(Vec::<GitFileChange>::new()));
+    let current_file_index = Rc::new(RefCell::new(None::<usize>));
+    let stats = Rc::new(RefCell::new((0usize, 0usize, 0usize))); // (total_files, total_additions, total_deletions)
+    
+    // Clone for closures
+    let file_changes_1 = Rc::clone(&file_changes);
+    let current_file_index_1 = Rc::clone(&current_file_index);
+    let stats_1 = Rc::clone(&stats);
+    
+    let file_changes_2 = Rc::clone(&file_changes);
+    let current_file_index_2 = Rc::clone(&current_file_index);
+    let stats_2 = Rc::clone(&stats);
+    
+    // Collect all diff information
+    diff.foreach(
+        &mut move |delta, _progress| {
+            let file_path = delta.new_file().path()
+                .or_else(|| delta.old_file().path())
+                .unwrap_or_else(|| std::path::Path::new("unknown"))
+                .display()
+                .to_string();
+            
+            let status = match delta.status() {
+                git2::Delta::Added => "added",
+                git2::Delta::Deleted => "deleted", 
+                git2::Delta::Modified => "modified",
+                git2::Delta::Renamed => "renamed",
+                git2::Delta::Copied => "copied",
+                git2::Delta::Untracked => "untracked",
+                _ => "unknown",
+            };
+
+            // Create a new file entry
+            file_changes_1.borrow_mut().push(GitFileChange {
+                file_path,
+                status: status.to_string(),
+                diff_lines: Vec::new(),
+                additions: 0,
+                deletions: 0,
+            });
+
+            let new_index = file_changes_1.borrow().len() - 1;
+            *current_file_index_1.borrow_mut() = Some(new_index);
+            stats_1.borrow_mut().0 += 1; // total_files
+            true
+        },
+        None,
+        Some(&mut |_delta, _binary| true),
+        Some(&mut move |_delta, _hunk, line| {
+            if let Some(idx) = *current_file_index_2.borrow() {
+                if let Some(last_file) = file_changes_2.borrow_mut().get_mut(idx) {
+                    let content = String::from_utf8_lossy(line.content()).trim_end().to_string();
+                    match line.origin() {
+                        '+' => {
+                            last_file.diff_lines.push(format!("+{}", content));
+                            last_file.additions += 1;
+                            stats_2.borrow_mut().1 += 1; // total_additions
+                        },
+                        '-' => {
+                            last_file.diff_lines.push(format!("-{}", content));
+                            last_file.deletions += 1;
+                            stats_2.borrow_mut().2 += 1; // total_deletions
+                        },
+                        ' ' => {
+                            last_file.diff_lines.push(format!(" {}", content));
+                        },
+                        _ => {
+                            // Handle other line types (like hunk headers)
+                            last_file.diff_lines.push(format!(" {}", content));
+                        }
+                    }
+                }
+            }
+            true
+        }),
+    )?;
+
+    let files = Rc::try_unwrap(file_changes).unwrap().into_inner();
+    let (total_files, total_additions, total_deletions) = Rc::try_unwrap(stats).unwrap().into_inner();
+    
+    Ok(GitDiffData {
+        files,
+        total_additions,
+        total_deletions,
+        total_files,
+    })
+}
+
 pub fn diff_branch(
     path: &str,
     branch: &str,
