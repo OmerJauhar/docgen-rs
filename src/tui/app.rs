@@ -1,4 +1,4 @@
-use docgen_rs::git_diff::GitDiffData;
+use crate::git_diff::GitDiffData;
 use serde::{Deserialize, Serialize};
 use std::fs;
 
@@ -250,7 +250,7 @@ impl App {
     }
 
     pub fn load_branches(&mut self, path: &str) -> Result<(), git2::Error> {
-        use docgen_rs::git_scan::list_local_branches;
+        use crate::git_scan::list_local_branches;
         self.available_branches = list_local_branches(path)?;
         self.selected_branch_index = 0;
         // Set current branch to the first available branch if any
@@ -267,7 +267,7 @@ impl App {
     }
 
     pub fn load_git_diff(&mut self) -> Result<(), Box<dyn std::error::Error>> {
-        use docgen_rs::git_diff::get_working_directory_diff;
+        use crate::git_diff::get_working_directory_diff;
         
         self.git_diff_data = get_working_directory_diff(&self.project_folder)?;
         self.git_status = self.git_diff_data.summary();

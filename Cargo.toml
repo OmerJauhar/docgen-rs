@@ -1,9 +1,23 @@
 [package]
-name = "docgen-rs"
-version = "0.1.0"
-edition = "2024"
+name = "docgen"
+version = "1.0.0"
+edition = "2021"
+authors = ["Omer Jauhar <omer.jauhar@greybeardsupport.com>"]
+license = "MIT"
+description = "AI-powered documentation generator for code changes - Internal tool for GreyBeard Outsourcing"
+homepage = "https://greybeardsupport.com"
+repository = "https://GreybeardTrilogy@dev.azure.com/GreybeardTrilogy/Document%20Generation/_git/Document%20Generation"
+keywords = ["documentation", "ai", "git", "tui", "developer-tools"]
+categories = ["command-line-utilities", "development-tools"]
+readme = "README.md"
+exclude = ["tests/*", "docs/*", ".gitignore"]
+
+[[bin]]
+name = "docgen"
+path = "src/main.rs"
 
 [dependencies]
+clap = { version = "4.4", features = ["derive"] }
 crossterm = "0.29.0"
 dirs = "5.0"
 dotenv = "0.15.0"

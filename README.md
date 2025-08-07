@@ -1,12 +1,30 @@
-# docgen-rs
+# DocGen - AI-Powered Documentation Generator
 
-A modern, TUI-based documentation assistant for Rust projects, powered by [Ratatui](https://github.com/ratatui-org/ratatui). docgen-rs helps developers visualize, analyze, and document code changes efficiently, with a professional and intuitive terminal interface.
+<div align="center">
 
-## Features
+![GreyBeard Outsourcing](https://img.shields.io/badge/GreyBeard-Outsourcing-blue?style=for-the-badge)
+![Version](https://img.shields.io/badge/version-1.0.0-green?style=for-the-badge)
+![Rust](https://img.shields.io/badge/rust-1.70+-orange?style=for-the-badge&logo=rust)
+![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux-lightgrey?style=for-the-badge)
 
-- **📊 Module Impact Heatmap:**
-  - Visualize changed files/modules from Git diffs.
-  - See lines added/removed, functions modified, and impact bars color-coded by change weight.
+*An intelligent terminal-based documentation generator for software engineers*
+
+</div>
+
+## 🚀 Overview
+
+DocGen is an internal tool developed for **GreyBeard Outsourcing** that helps software engineers automatically generate comprehensive documentation for their code changes using AI analysis. By combining git diff analysis with contextual information, DocGen creates professional documentation that saves time and ensures consistency across projects.
+
+## ✨ Features
+
+- 🔍 **Smart Git Analysis** - Automatically analyzes git diffs and identifies key changes
+- 🤖 **AI-Powered Generation** - Uses advanced language models to create documentation
+- 📊 **Real-time Cost Estimation** - Shows token usage and costs in USD/PKR
+- 👤 **User Management** - Persistent user configuration for team consistency
+- 🌿 **Branch Management** - Easy branch selection and switching
+- 💰 **Cost Tracking** - Real-time estimation of AI processing costs
+- 🖥️ **Cross-Platform** - Works on Windows and Linux
+- 🎨 **Beautiful TUI** - Modern terminal user interface
 
 - **⚙️ Code Change Flow Diagram:**
   - Step-by-step horizontal diagram: [Git Diff] → [Metadata Form] → [LLM Analysis] → [Markdown Gen] → [PDF Export].
@@ -22,6 +40,56 @@ A modern, TUI-based documentation assistant for Rust projects, powered by [Ratat
 - **Professional TUI Design:**
   - Clean, bordered panels with headings and keyboard navigation.
   - Tabs for switching between Form, Git Diff Viewer, and LLM Stats.
+
+## 🔧 Installation
+
+### Quick Start for GreyBeard Team Members
+
+**Clone the Repository:**
+```bash
+git clone "https://GreybeardTrilogy@dev.azure.com/GreybeardTrilogy/Document%20Generation/_git/Document%20Generation"
+cd "Document%20Generation"  # Note: Directory name will be URL-encoded
+```
+
+**Windows Installation:**
+```powershell
+# Run as Administrator
+.\install.ps1
+```
+
+**Linux Installation:**
+```bash
+# System-wide installation (requires sudo)
+./install.sh
+
+# User-only installation
+./install.sh --user
+```
+
+**Verify Installation:**
+```bash
+docgen version
+docgen config
+```
+
+### Command Usage
+
+Once installed, use DocGen with these commands:
+
+```bash
+# Launch the interactive documentation generator
+docgen generate
+
+# Configure user information
+docgen config
+
+# Show version information
+docgen version
+```
+
+### For IT Deployment
+
+See [`DEPLOYMENT.md`](DEPLOYMENT.md) for comprehensive enterprise deployment instructions.
 
 ## Screenshots
 

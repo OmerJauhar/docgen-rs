@@ -1,0 +1,151 @@
+name: Build and Release DocGen
+
+on:
+  push:
+    branches: [ main, develop ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    name: Test Suite
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+        
+    - name: Run tests
+      run: cargo test --verbose
+      
+    - name: Check formatting
+      run: cargo fmt -- --check
+      
+    - name: Run clippy
+      run: cargo clippy -- -D warnings
+
+  build:
+    name: Build binaries
+    needs: test
+    strategy:
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            name: docgen-linux-x86_64
+          - target: x86_64-pc-windows-gnu
+            os: ubuntu-latest
+            name: docgen-windows-x86_64.exe
+          - target: x86_64-apple-darwin
+            os: macos-latest
+            name: docgen-macos-x86_64
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: ${{ matrix.target }}
+        
+    - name: Install cross-compilation tools
+      if: matrix.target == 'x86_64-pc-windows-gnu'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc-mingw-w64-x86-64
+        
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ matrix.os }}-${{ matrix.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+        
+    - name: Build binary
+      run: cargo build --release --target ${{ matrix.target }}
+      
+    - name: Package binary
+      run: |
+        mkdir -p dist
+        if [[ "${{ matrix.target }}" == *"windows"* ]]; then
+          cp target/${{ matrix.target }}/release/docgen.exe dist/${{ matrix.name }}
+        else
+          cp target/${{ matrix.target }}/release/docgen dist/${{ matrix.name }}
+        fi
+        
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ matrix.name }}
+        path: dist/${{ matrix.name }}
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Download all artifacts
+      uses: actions/download-artifact@v3
+      
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          docgen-linux-x86_64/docgen-linux-x86_64
+          docgen-windows-x86_64.exe/docgen-windows-x86_64.exe
+          docgen-macos-x86_64/docgen-macos-x86_64
+        body: |
+          ## DocGen v${{ github.ref_name }}
+          
+          AI-powered documentation generator for GreyBeard Outsourcing
+          
+          ### Installation
+          
+          **Linux:**
+          ```bash
+          curl -L "https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/docgen-linux-x86_64" -o /usr/local/bin/docgen
+          chmod +x /usr/local/bin/docgen
+          ```
+          
+          **Windows:**
+          Download `docgen-windows-x86_64.exe` and place it in your PATH.
+          
+          **macOS:**
+          ```bash
+          curl -L "https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/docgen-macos-x86_64" -o /usr/local/bin/docgen
+          chmod +x /usr/local/bin/docgen
+          ```
+          
+          ### Usage
+          ```bash
+          docgen generate    # Start documentation generator
+          docgen config      # Configure user settings
+          docgen version     # Show version
+          ```
+          
+          For support: omer.jauhar@greybeardsupport.com
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
