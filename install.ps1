@@ -66,16 +66,22 @@ function Install-DocGen {
         $rustupUrl = "https://win.rustup.rs/x86_64"
         $rustupPath = "$env:TEMP\rustup-init.exe"
         
-        Write-Host "📥 Downloading Rust installer..."
-        Invoke-WebRequest -Uri $rustupUrl -OutFile $rustupPath
-        
-        Write-Host "🔧 Installing Rust..."
-        Start-Process -FilePath $rustupPath -ArgumentList "-y" -Wait
-        
-        # Refresh environment variables
-        $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("PATH", "User")
-        
-        Write-Host "[+] Rust installed successfully"
+        Write-Host "[*] Downloading Rust installer..."
+        try {
+            Invoke-WebRequest -Uri $rustupUrl -OutFile $rustupPath
+            Write-Host "[*] Installing Rust..."
+            Start-Process -FilePath $rustupPath -ArgumentList "-y" -Wait
+            
+            # Refresh environment variables
+            $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("PATH", "User")
+            
+            Write-Host "[+] Rust installed successfully"
+        } catch {
+            Write-Host "[!] Automatic Rust installation failed." -ForegroundColor Red
+            Write-Host "    Please install Rust manually from https://rustup.rs/" -ForegroundColor Yellow
+            Write-Host "    Then restart PowerShell and run this script again." -ForegroundColor Yellow
+            exit 1
+        }
     }
 
     # Check if Git is installed
