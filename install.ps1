@@ -106,22 +106,30 @@ function Install-DocGen {
     Write-Host "[+] Binary installed to $targetBinary"
 
     # Add to PATH
-    Write-Host "🔧 Configuring PATH..."
+    Write-Host "[*] Configuring PATH..."
     
     if ($User) {
         # User-level PATH
         $userPath = [System.Environment]::GetEnvironmentVariable("PATH", "User")
         if ($userPath -notlike "*$installDir*") {
-            $newUserPath = $userPath + ";" + $installDir
-            [System.Environment]::SetEnvironmentVariable("PATH", $newUserPath, "User")
+            if ($userPath) {
+                $newPath = "$userPath;$installDir"
+            } else {
+                $newPath = $installDir
+            }
+            [System.Environment]::SetEnvironmentVariable("PATH", $newPath, "User")
             Write-Host "[+] Added to user PATH"
         }
     } else {
-        # System-level PATH
+        # System-level PATH  
         $systemPath = [System.Environment]::GetEnvironmentVariable("PATH", "Machine")
         if ($systemPath -notlike "*$installDir*") {
-            $newSystemPath = $systemPath + ";" + $installDir
-            [System.Environment]::SetEnvironmentVariable("PATH", $newSystemPath, "Machine")
+            if ($systemPath) {
+                $newPath = "$systemPath;$installDir"
+            } else {
+                $newPath = $installDir
+            }
+            [System.Environment]::SetEnvironmentVariable("PATH", $newPath, "Machine")
             Write-Host "[+] Added to system PATH"
         }
     }

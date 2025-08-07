@@ -53,14 +53,16 @@ cd "Document%20Generation"  # Note: Directory name will be URL-encoded
 
 **Windows Installation:**
 ```powershell
-# Run as Administrator for system-wide installation
+# Option 1: Full automatic installation (may have PowerShell compatibility issues)
 .\install.ps1
 
-# Or for user-only installation (no admin required):
-.\install.ps1 -User
+# Option 2: Simplified installation (recommended if install.ps1 fails)
+.\install-simple.ps1
 
-# If docgen command not found after installation, restart PowerShell or reload PATH:
-$env:PATH = [System.Environment]::GetEnvironmentVariable("PATH", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("PATH", "User")
+# For user-only installation (no admin required):
+.\install-simple.ps1 -User
+
+# After installation, restart PowerShell or manually add to PATH if needed
 ```
 
 **Linux Installation:**
