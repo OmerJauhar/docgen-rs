@@ -28,7 +28,7 @@ function Test-IsAdmin {
 
 # Main installation function
 function Install-DocGen {
-    Write-Host "🚀 DocGen Installation for GreyBeard Outsourcing" -ForegroundColor Green
+    Write-Host "[*] DocGen Installation for GreyBeard Outsourcing" -ForegroundColor Green
     Write-Host "================================================`n"
 
     # Determine installation directory
@@ -38,29 +38,29 @@ function Install-DocGen {
         $installDir = "$env:LOCALAPPDATA\Programs\DocGen"
     } else {
         if (-not (Test-IsAdmin)) {
-            Write-Host "❌ System-wide installation requires administrator privileges." -ForegroundColor Red
+            Write-Host "[!] System-wide installation requires administrator privileges." -ForegroundColor Red
             Write-Host "   Please run PowerShell as Administrator or use -User flag." -ForegroundColor Yellow
             exit 1
         }
         $installDir = "$env:ProgramFiles\GreyBeard\DocGen"
     }
 
-    Write-Host "📂 Installation directory: $installDir"
+    Write-Host "[+] Installation directory: $installDir"
 
     # Create installation directory
     if (-not (Test-Path $installDir)) {
         New-Item -ItemType Directory -Path $installDir -Force | Out-Null
-        Write-Host "✅ Created installation directory"
+        Write-Host "[+] Created installation directory"
     }
 
     # Check if Rust is installed
-    Write-Host "🔍 Checking dependencies..."
+    Write-Host "[?] Checking dependencies..."
     
     try {
         $rustVersion = cargo --version
-        Write-Host "✅ Rust found: $rustVersion" -ForegroundColor Green
+        Write-Host "[+] Rust found: $rustVersion" -ForegroundColor Green
     } catch {
-        Write-Host "❌ Rust not found. Installing Rust..." -ForegroundColor Yellow
+        Write-Host "[!] Rust not found. Installing Rust..." -ForegroundColor Yellow
         
         # Download and install Rustup
         $rustupUrl = "https://win.rustup.rs/x86_64"
@@ -75,35 +75,35 @@ function Install-DocGen {
         # Refresh environment variables
         $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("PATH", "User")
         
-        Write-Host "✅ Rust installed successfully"
+        Write-Host "[+] Rust installed successfully"
     }
 
     # Check if Git is installed
     try {
         $gitVersion = git --version
-        Write-Host "✅ Git found: $gitVersion" -ForegroundColor Green
+        Write-Host "[+] Git found: $gitVersion" -ForegroundColor Green
     } catch {
-        Write-Host "❌ Git not found. Please install Git from https://git-scm.com/download/win" -ForegroundColor Red
+        Write-Host "[!] Git not found. Please install Git from https://git-scm.com/download/win" -ForegroundColor Red
         Write-Host "   Git is required for DocGen to analyze repositories." -ForegroundColor Yellow
         exit 1
     }
 
     # Build DocGen
-    Write-Host "🔨 Building DocGen..."
+    Write-Host "[*] Building DocGen..."
     
     if (Test-Path "Cargo.toml") {
         # Building from source
         cargo build --release
         $sourceBinary = "target\release\docgen.exe"
     } else {
-        Write-Host "❌ Cargo.toml not found. Please run this script from the DocGen source directory." -ForegroundColor Red
+        Write-Host "[!] Cargo.toml not found. Please run this script from the DocGen source directory." -ForegroundColor Red
         exit 1
     }
 
     # Copy binary to installation directory
     $targetBinary = "$installDir\docgen.exe"
     Copy-Item $sourceBinary $targetBinary -Force
-    Write-Host "✅ Binary installed to $targetBinary"
+    Write-Host "[+] Binary installed to $targetBinary"
 
     # Add to PATH
     Write-Host "🔧 Configuring PATH..."
@@ -113,14 +113,14 @@ function Install-DocGen {
         $userPath = [System.Environment]::GetEnvironmentVariable("PATH", "User")
         if ($userPath -notlike "*$installDir*") {
             [System.Environment]::SetEnvironmentVariable("PATH", "$userPath;$installDir", "User")
-            Write-Host "✅ Added to user PATH"
+            Write-Host "[+] Added to user PATH"
         }
     } else {
         # System-level PATH
         $systemPath = [System.Environment]::GetEnvironmentVariable("PATH", "Machine")
         if ($systemPath -notlike "*$installDir*") {
             [System.Environment]::SetEnvironmentVariable("PATH", "$systemPath;$installDir", "Machine")
-            Write-Host "✅ Added to system PATH"
+            Write-Host "[+] Added to system PATH"
         }
     }
 
@@ -135,10 +135,10 @@ function Install-DocGen {
         $shortcut.Description = "DocGen - AI Documentation Generator"
         $shortcut.WorkingDirectory = $installDir
         $shortcut.Save()
-        Write-Host "✅ Desktop shortcut created"
+        Write-Host "[+] Desktop shortcut created"
     }
 
-    Write-Host "`n🎉 Installation completed successfully!" -ForegroundColor Green
+    Write-Host "`n[*] Installation completed successfully!" -ForegroundColor Green
     Write-Host "================================================"
     Write-Host "You can now run DocGen using any of these commands:"
     Write-Host "  docgen generate              # Start the documentation generator"

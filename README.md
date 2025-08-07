@@ -55,6 +55,9 @@ cd "Document%20Generation"  # Note: Directory name will be URL-encoded
 ```powershell
 # Run as Administrator
 .\install.ps1
+
+# After installation, restart PowerShell or reload your PATH:
+$env:PATH = [System.Environment]::GetEnvironmentVariable("PATH", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("PATH", "User")
 ```
 
 **Linux Installation:**
