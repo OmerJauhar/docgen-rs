@@ -53,16 +53,17 @@ cd "Document%20Generation"  # Note: Directory name will be URL-encoded
 
 **Windows Installation:**
 ```powershell
-# Option 1: Full automatic installation (may have PowerShell compatibility issues)
-.\install.ps1
-
-# Option 2: Simplified installation (recommended if install.ps1 fails)
-.\install-simple.ps1
-
-# For user-only installation (no admin required):
+# Option 1: User installation (no admin required) - RECOMMENDED FOR DEVELOPERS
 .\install-simple.ps1 -User
 
-# After installation, restart PowerShell or manually add to PATH if needed
+# Option 2: Portable setup (no installation, no admin required)
+.\setup-portable.ps1
+
+# Option 3: System-wide installation (requires Administrator)
+.\install-simple.ps1
+
+# Option 4: Enterprise deployment (for IT Department)
+# See DEPLOYMENT.md for mass deployment across company machines
 ```
 
 **Linux Installation:**
