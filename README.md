@@ -208,6 +208,3 @@ fn test_list_local_branches_integration() {
 }
 ```
 
-## License
-
-MIT
