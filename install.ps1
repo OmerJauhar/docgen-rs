@@ -112,14 +112,16 @@ function Install-DocGen {
         # User-level PATH
         $userPath = [System.Environment]::GetEnvironmentVariable("PATH", "User")
         if ($userPath -notlike "*$installDir*") {
-            [System.Environment]::SetEnvironmentVariable("PATH", $userPath + ";" + $installDir, "User")
+            $newUserPath = $userPath + ";" + $installDir
+            [System.Environment]::SetEnvironmentVariable("PATH", $newUserPath, "User")
             Write-Host "[+] Added to user PATH"
         }
     } else {
         # System-level PATH
         $systemPath = [System.Environment]::GetEnvironmentVariable("PATH", "Machine")
         if ($systemPath -notlike "*$installDir*") {
-            [System.Environment]::SetEnvironmentVariable("PATH", $systemPath + ";" + $installDir, "Machine")
+            $newSystemPath = $systemPath + ";" + $installDir
+            [System.Environment]::SetEnvironmentVariable("PATH", $newSystemPath, "Machine")
             Write-Host "[+] Added to system PATH"
         }
     }
